@@ -1,0 +1,16 @@
+{
+  "rules": {
+    "sessions": {
+      "$session": {
+        ".read": true,
+        ".write": true,
+        ".validate": "$session.matches(/^[a-zA-Z0-9_-]{6,64}$/)",
+        "messages": {
+          "$message": {
+            ".validate": "newData.hasChildren(['text', 'clientTime']) && newData.child('text').isString() && newData.child('text').val().length <= 5000"
+          }
+        }
+      }
+    }
+  }
+}

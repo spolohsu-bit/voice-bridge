@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Voice Bridge</title>
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <div>
+          <h1>Voice Bridge</h1>
+          <p class="sub" id="modeLabel">Receiver</p>
+        </div>
+        <div class="session">
+          <span>session</span>
+          <strong id="sessionLabel"></strong>
+        </div>
+      </header>
+
+      <section id="configWarning" class="notice hidden">
+        Firebase config is missing. Copy <code>firebase-config.example.js</code> to
+        <code>firebase-config.js</code>, then paste your Firebase web app config.
+      </section>
+
+      <section id="receiverView" class="receiver-layout hidden">
+        <div class="panel stack">
+          <div class="actions">
+            <button class="primary" id="enableCopyButton" type="button">Enable auto copy</button>
+            <button id="copyLatestButton" type="button">Copy latest</button>
+            <button id="clearSessionButton" type="button">Clear session</button>
+          </div>
+          <div class="status" id="receiveStatus">Connecting...</div>
+          <textarea id="latestText" readonly class="latest" placeholder="Latest received text will appear here."></textarea>
+          <div class="messages" id="messages"></div>
+        </div>
+
+        <aside class="panel qr">
+          <img id="qrImage" alt="QR code for phone sender page">
+          <div class="linkbox" id="sendLink"></div>
+          <button id="copyLinkButton" type="button">Copy phone link</button>
+        </aside>
+      </section>
+
+      <section id="senderView" class="panel stack hidden">
+        <textarea id="sendText" autofocus placeholder="Tap here, use the iPhone keyboard microphone, then send."></textarea>
+        <div class="actions">
+          <button class="primary" id="sendButton" type="button">Send</button>
+          <button id="clearInputButton" type="button">Clear</button>
+          <button id="openReceiverButton" type="button">Open receiver</button>
+        </div>
+        <div class="status" id="sendStatus">Ready.</div>
+      </section>
+    </main>
+
+    <script src="./firebase-config.js"></script>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
