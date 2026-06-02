@@ -25,7 +25,9 @@ const state = {
   session: getSession(),
   autoCopy: false,
   latestText: '',
-  seen: new Set()
+  seen: new Set(),
+  unsubscribeMessages: null,
+  unsubscribeConnection: null
 };
 
 const $ = (id) => document.getElementById(id);
@@ -84,13 +86,12 @@ function initReceiver() {
   $('modeLabel').textContent = 'Windows receiver';
   $('receiverView').classList.remove('hidden');
 
-  const phoneUrl = makeSenderUrl();
-  $('sendLink').textContent = phoneUrl;
-  $('qrImage').src = 'https://quickchart.io/qr?size=320&text=' + encodeURIComponent(phoneUrl);
+  renderSession();
 
   $('enableCopyButton').addEventListener('click', enableAutoCopy);
   $('copyLatestButton').addEventListener('click', () => copyText(state.latestText));
-  $('copyLinkButton').addEventListener('click', () => copyText(phoneUrl));
+  $('copyLinkButton').addEventListener('click', () => copyText(makeSenderUrl()));
+  $('newSessionButton').addEventListener('click', newSession);
   $('clearSessionButton').addEventListener('click', clearSession);
 
   if (!database) {
@@ -144,6 +145,7 @@ async function sendText() {
 }
 
 function subscribeToMessages() {
+  unsubscribeReceiver();
   setReceiveStatus('Listening for phone text...');
 
   const messagesRef = query(
@@ -151,7 +153,7 @@ function subscribeToMessages() {
     limitToLast(MESSAGE_LIMIT)
   );
 
-  onChildAdded(messagesRef, async (snapshot) => {
+  state.unsubscribeMessages = onChildAdded(messagesRef, async (snapshot) => {
     if (state.seen.has(snapshot.key)) {
       return;
     }
@@ -167,7 +169,7 @@ function subscribeToMessages() {
     setReceiveStatus(error.message || String(error), true);
   });
 
-  onValue(ref(database, `.info/connected`), (snapshot) => {
+  state.unsubscribeConnection = onValue(ref(database, `.info/connected`), (snapshot) => {
     if (snapshot.val() === true && !state.latestText) {
       setReceiveStatus('Listening for phone text...');
     }
@@ -233,6 +235,56 @@ async function clearSession() {
     setReceiveStatus('Session cleared.');
   } catch (error) {
     setReceiveStatus(error.message || String(error), true);
+  }
+}
+
+function newSession() {
+  state.session = makeSession();
+  window.localStorage.setItem(SESSION_KEY, state.session);
+
+  const url = new URL(window.location.href);
+  url.searchParams.set('session', state.session);
+  url.searchParams.delete('mode');
+  window.history.replaceState({}, '', url.toString());
+
+  resetReceiverState();
+  renderSession();
+
+  if (database) {
+    subscribeToMessages();
+  }
+
+  setReceiveStatus('New session ready. Scan the updated QR code.');
+}
+
+function resetReceiverState() {
+  state.latestText = '';
+  state.seen.clear();
+  $('messages').innerHTML = '';
+  $('latestText').value = '';
+}
+
+function renderSession() {
+  $('sessionLabel').textContent = state.session;
+
+  if (state.mode !== 'receive') {
+    return;
+  }
+
+  const phoneUrl = makeSenderUrl();
+  $('sendLink').textContent = phoneUrl;
+  $('qrImage').src = 'https://quickchart.io/qr?size=320&text=' + encodeURIComponent(phoneUrl);
+}
+
+function unsubscribeReceiver() {
+  if (typeof state.unsubscribeMessages === 'function') {
+    state.unsubscribeMessages();
+    state.unsubscribeMessages = null;
+  }
+
+  if (typeof state.unsubscribeConnection === 'function') {
+    state.unsubscribeConnection();
+    state.unsubscribeConnection = null;
   }
 }
 
