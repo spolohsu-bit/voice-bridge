@@ -32,7 +32,12 @@
             <button id="clearSessionButton" type="button">Clear session</button>
           </div>
           <div class="status" id="receiveStatus">Connecting...</div>
+          <label class="field-label" for="latestText">Latest text</label>
           <textarea id="latestText" readonly class="latest" placeholder="Latest received text will appear here."></textarea>
+          <div class="history-head">
+            <h2>History</h2>
+            <span>Newest first</span>
+          </div>
           <div class="messages" id="messages"></div>
         </div>
 
@@ -48,7 +53,6 @@
         <div class="actions">
           <button class="primary" id="sendButton" type="button">Send</button>
           <button id="clearInputButton" type="button">Clear</button>
-          <button id="openReceiverButton" type="button">Open receiver</button>
         </div>
         <div class="status" id="sendStatus">Ready.</div>
       </section>

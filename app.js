@@ -78,9 +78,6 @@ function initSender() {
     $('sendText').value = '';
     $('sendText').focus();
   });
-  $('openReceiverButton').addEventListener('click', () => {
-    window.open(makeReceiverUrl(), '_blank');
-  });
 }
 
 function initReceiver() {
@@ -186,10 +183,25 @@ async function addMessage(id, message) {
   node.className = 'message';
   node.dataset.id = id;
 
+  const meta = document.createElement('div');
+  meta.className = 'message-meta';
+
   const time = document.createElement('time');
   time.textContent = formatTime(message.createdAt || message.clientTime || Date.now());
-  node.appendChild(time);
-  node.appendChild(document.createTextNode(text));
+  meta.appendChild(time);
+
+  const copyButton = document.createElement('button');
+  copyButton.type = 'button';
+  copyButton.className = 'message-copy';
+  copyButton.textContent = 'Copy';
+  copyButton.addEventListener('click', () => copyText(text));
+  meta.appendChild(copyButton);
+  node.appendChild(meta);
+
+  const body = document.createElement('div');
+  body.className = 'message-text';
+  body.textContent = text;
+  node.appendChild(body);
 
   const messages = $('messages');
   messages.prepend(node);
@@ -265,13 +277,6 @@ function selectLatestText(text) {
 function makeSenderUrl() {
   const url = new URL(window.location.href);
   url.searchParams.set('mode', 'send');
-  url.searchParams.set('session', state.session);
-  return url.toString();
-}
-
-function makeReceiverUrl() {
-  const url = new URL(window.location.href);
-  url.searchParams.delete('mode');
   url.searchParams.set('session', state.session);
   return url.toString();
 }
